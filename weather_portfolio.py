@@ -21,8 +21,8 @@ else:
 #동네 이름 받아오면 위도, 경도 값으로 변환 (excel 데이터 이용)
 
 if now_hour < 2:
-    now_day = str(int(now_day)-1) #00시~ 02시전까지는 전날 23시에 발표한 api를 사용하므로 이를 조정
-    basetime = "2300"             #day가 말일에서 다음 달 1일로 바뀌는 경우 상황 고려해야함
+    now_day = str(int(now_day)-1)   #00시~ 02시전까지는 전날 23시에 발표한 api를 사용하므로 이를 조정
+    basetime = "2300"               #day가 말일에서 다음 달 1일로 바뀌는 경우 상황 고려해야함
 elif now_hour < 5:
     basetime = "0200"
 elif now_hour < 8:
@@ -47,8 +47,8 @@ basedate = now_year + now_month + now_day
 
 query_params ='?' + urlencode({     #API 항목명과 일치해야함, encode 하는 이유?
                 quote_plus('Servicekey') : key_Decoded, 
-                quote_plus('numOfRows') : '288',  #1시간에 데이터 12개 나옴. TMN,TMX없음  #한시간에 12 Row datas -> 24시간치 = 288 Rows
-                quote_plus('dataType') : 'json', 
+                quote_plus('numOfRows') : '288',        #1시간에 데이터 12개 나옴. TMN,TMX없음  
+                quote_plus('dataType') : 'json',        #한시간에 12 Row datas -> 24시간치 = 288 Rows
                 quote_plus('base_date') : basedate, 
                 quote_plus('base_time') : basetime, 
                 quote_plus('pageNo') : 1, 
@@ -60,20 +60,37 @@ response = requests.get(url + query_params)
 data = json.loads(response.text)
 
 weathers = []
+line_number =[]
 BASE_ROUTE = data["response"]["body"]["items"]["item"]
-#print(BASE_ROUTE)
-
-baseDate = BASE_ROUTE[0]["baseDate"]
-baseTime = BASE_ROUTE[0]["baseTime"]
+baseDate = BASE_ROUTE[0]["baseDate"]     #baseDate, baseTime,
+baseTime = BASE_ROUTE[0]["baseTime"]     #x_coordinate, y_coordinate 이것은 input 받은 후 고정값
 x_coordinate = BASE_ROUTE[0]["nx"]
 y_coordinate = BASE_ROUTE[0]["ny"]
+count = 1
 
-for i in range(1):
+for num in range(int(len(BASE_ROUTE)/12) + 1): 
+    line_number.append(num * 12)
+
+for i in range(24):
     forecast_Date = BASE_ROUTE[i*12]["fcstDate"]
     forecast_Time = BASE_ROUTE[i*12]["fcstTime"]
+    
     categorys = []
         
-    weathers_dict = {
+    for j in range(line_number[count] - 12, line_number[count]):  #기준
+        category = BASE_ROUTE[j]["category"]
+        fcstValue = BASE_ROUTE[j]["fcstValue"]
+        
+        categorys_d = {
+            "category" : category,
+            "fcstValue" : fcstValue
+        }
+
+        categorys.append(categorys_d)
+
+    count += 1
+
+    weathers_d = {
             "baseDate": baseDate, 
             "baseTime": baseTime,
             "x_coordinate": x_coordinate,
@@ -83,22 +100,8 @@ for i in range(1):
             "categorys": categorys        
     }
 
-    weathers.append(weathers_dict)
-
-
-    for item in BASE_ROUTE:  #기준
-        item["category"]
-        item["fcstValue"]
-
-        categorys_dict = {
-            "category": item["category"],
-            "fcstValue": item["fcstValue"]
-        }
-        
-        categorys.append(categorys_dict)
-
+    weathers.append(weathers_d)
 
     #len(리스트) -> 리스트 요소의 개수 (dict도 하나의 요소임)
     
-                
 print(weathers)
