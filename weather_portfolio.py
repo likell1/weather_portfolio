@@ -103,5 +103,65 @@ for i in range(24):
     weathers.append(weathers_d)
 
     #len(리스트) -> 리스트 요소의 개수 (dict도 하나의 요소임)
-    
-print(weathers)
+
+print("현재 시각:", now)
+print("기상청에서", baseDate[:4],"년", baseDate[4:6],"월", baseDate[6:8],"일", baseTime[:2],"시에 발표한 예보입니다.")
+
+for item in weathers:
+    index_1 = item["forecast_Date"]
+    index_2 = item["forecast_Time"]
+    print(index_1[:4],"년", index_1[4:6],"월", index_1[6:8],"일", index_2[:2],"시")  #if문 이용 -> 현재시간보다 이전의 예보는 가져오지 않음 
+
+    for i in range(12):
+        if item["categorys"][i]["category"] == "TMP":                       # POP = "강수 확률"
+            print("기온:", item["categorys"][i]["fcstValue"], "°C")          # PTY = "강수 형태"
+                                                                            # PCP = "1시간 강수량"    
+        elif item["categorys"][i]["category"] == "SKY":                     # REH = "습도"
+            if item["categorys"][i]["fcstValue"] == "1":                    # SNO = "1시간 적설량"
+                print("날씨: 맑음")                                           # SKY = "하늘"
+            elif item["categorys"][i]["fcstValue"] == "3":                  # TMP = "기온"
+                print("날씨: 구름많음")                                        # UUU = "퓽속(동서)"
+            elif item["categorys"][i]["fcstValue"] == "4":                  # VVV = "풍속(남북)"
+                print("날씨: 흐림")                                           # VEC = "파고"  
+                                                                            # WAC = "풍향"
+        elif item["categorys"][i]["category"] == "POP":                     # WSD = "풍속"
+            print("강수 확률:", item["categorys"][i]["fcstValue"], "%")
+        
+        elif item["categorys"][i]["category"] == "PTY":
+            if item["categorys"][i]["fcstValue"] == "0":
+                pass               
+            elif item["categorys"][i]["fcstValue"] == "1":
+                print("강수 형태: 비")
+            elif item["categorys"][i]["fcstValue"] == "2":
+                print("강수 형태: 비 or 눈")
+            elif item["categorys"][i]["fcstValue"] == "3":
+                print("강수 형태: 눈")
+            elif item["categorys"][i]["fcstValue"] == "4":
+                print("강수 형태: 소나기")
+            
+        elif item["categorys"][i]["category"] == "PCP":
+            if item["categorys"][i]["fcstValue"] != "강수없음":
+                if float(item["categorys"][i]["fcstValue"]) < 1.0:
+                    print("시간 당 강수량: 1.0 mm 미만")
+                elif float(item["categorys"][i]["fcstValue"]) < 30.0:
+                    print("시간 당 강수량:", item["categorys"][i]["fcstValue"], "mm")
+                elif float(item["categorys"][i]["fcstValue"]) < 50.0:
+                    print("시간 당 강수량: 30.0 ~ 50.0 mm")
+                else:
+                    print("시간 당 강수량: 50.0 mm 이상")
+
+        elif item["categorys"][i]["category"] == "REH":
+            print("습도:", item["categorys"][i]["fcstValue"], "%")
+
+        elif item["categorys"][i]["category"] == "WSD":
+            print("풍속:", item["categorys"][i]["fcstValue"], "m/s")
+        
+        elif item["categorys"][i]["category"] == "SNO":
+            if item["categorys"][i]["fcstValue"] != "적설없음":
+                if float(item["categorys"][i]["fcstValue"]) < 1.0:
+                    print("시간 당 적설량: 1.0 cm 미만")
+                elif float(item["categorys"][i]["fcstValue"]) < 5.0:
+                    print("시간 당 적설량:", item["categorys"][i]["fcstValue"], "cm")
+                else:
+                    print("시간 당 적설량: 5.0 cm 이상")
+        
